@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Web App</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 2rem; }
+      .container { max-width: 800px; margin: 0 auto; }
+      h1 { text-align: center; margin-bottom: 2rem; color: #00d4ff; }
+      .card { background: #16213e; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px
+  rgba(0,0,0,0.3); }
+      .card h2 { color: #00d4ff; margin-bottom: 1rem; }
+      input[type="text"] { width: 70%; padding: 0.75rem; border: none; border-radius: 6px; background: #0f3460; color:
+  #eee; font-size: 1rem; }
+      button { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; background: #00d4ff; color: #1a1a2e;
+  font-weight: bold; cursor: pointer; font-size: 1rem; }
+      button:hover { background: #00b4d8; }
+      .messages { list-style: none; max-height: 300px; overflow-y: auto; }
+      .messages li { padding: 0.75rem; border-bottom: 1px solid #0f3460; }
+      .messages li small { color: #888; }
+      .info { font-size: 0.9rem; color: #aaa; }
+      #status { padding: 0.5rem 1rem; border-radius: 20px; display: inline-block; font-size: 0.85rem; }
+      .healthy { background: #064e3b; color: #6ee7b7; }
+      .unhealthy { background: #7f1d1d; color: #fca5a5; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Kubernetes 3-Tier App</h1>
+
+      <div class="card">
+        <h2>System Status</h2>
+        <p>Backend: <span id="status">Checking...</span></p>
+        <p class="info" id="pod-info"></p>
+      </div>
+
+      <div class="card">
+        <h2>Messages</h2>
+        <div style="margin-bottom:1rem;">
+          <input type="text" id="msgInput" placeholder="Type a message..." />
+          <button onclick="sendMessage()">Send</button>
+        </div>
+        <ul class="messages" id="messageList"></ul>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = '/api';
+
+      async function checkHealth() {
+        try {
+          const res = await fetch(`${API_BASE}/health`);
+          const data = await res.json();
+          const el = document.getElementById('status');
+          el.textContent = `Healthy (${data.timestamp})`;
+          el.className = 'healthy';
+
+          const infoRes = await fetch(`${API_BASE}/info`);
+          const info = await infoRes.json();
+          document.getElementById('pod-info').textContent =
+            `Pod: ${info.pod} | Uptime: ${Math.round(info.uptime)}s | Version: ${info.version}`;
+        } catch (e) {
+          const el = document.getElementById('status');
+          el.textContent = 'Unhealthy';
+          el.className = 'unhealthy';
+        }
+      }
+
+      async function loadMessages() {
+        try {
+          const res = await fetch(`${API_BASE}/messages`);
+          const messages = await res.json();
+          const list = document.getElementById('messageList');
+          list.innerHTML = messages.map(m =>
+            `<li>${m.content} <small>${new Date(m.created_at).toLocaleString()}</small></li>`
+          ).join('');
+        } catch (e) {
+          console.error('Failed to load messages:', e);
+        }
+      }
+
+      async function sendMessage() {
+        const input = document.getElementById('msgInput');
+        const content = input.value.trim();
+        if (!content) return;
+        try {
+          await fetch(`${API_BASE}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content }),
+          });
+          input.value = '';
+          loadMessages();
+        } catch (e) {
+          console.error('Failed to send message:', e);
+        }
+      }
+
+      checkHealth();
+      loadMessages();
+      setInterval(checkHealth, 10000);
+      setInterval(loadMessages, 5000);
+    </script>
+  </body>
+  </html>
