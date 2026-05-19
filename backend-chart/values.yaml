@@ -1,0 +1,37 @@
+replicaCount: 2
+
+image:
+  repository: k8s-backend
+  tag: "2.0"
+  pullPolicy: Never
+
+service:
+  type: ClusterIP
+  port: 3000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 50
+  targetMemoryUtilizationPercentage: 70
+
+db:
+  host: mysql-svc
+  port: "3306"
+  name: webapp
+  user: appuser
+  password: apppass456
+
+probes:
+  path: /api/health
+  initialDelaySeconds: 10
+  periodSeconds: 10

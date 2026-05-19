@@ -1,0 +1,25 @@
+apiVersion: v1
+entries:
+  backend-chart:
+  - apiVersion: v2
+    appVersion: "2.0"
+    created: "2026-05-19T16:10:11.677634756+05:30"
+    description: Node.js Backend API for K8s webapp
+    digest: 202a7078d32700175eb423a85c1090b2348877350d4e142d4520522224a6e933
+    name: backend-chart
+    type: application
+    urls:
+    - backend-chart-1.0.0.tgz
+    version: 1.0.0
+  frontend-chart:
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2026-05-19T16:10:11.677884096+05:30"
+    description: Nginx Frontend for K8s webapp
+    digest: 567f59172a7f02760e8700273f732a16d57cdebad3bc534cde37abf93d084847
+    name: frontend-chart
+    type: application
+    urls:
+    - frontend-chart-1.0.0.tgz
+    version: 1.0.0
+generated: "2026-05-19T16:10:11.677270299+05:30"
